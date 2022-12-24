@@ -1,0 +1,33 @@
+# Containerfile to build image for JBoss EAP 6.4
+
+# Starting from base image rhel 7.2
+FROM rhel
+
+MAINTAINER alex
+
+# Update OS
+RUN yum -y update && yum -y install sudo openssh-clients \ 
+	telnet unzip java-1.8.0-openjdk-devel && \
+	yum clean all
+
+# Enable sudo group on system and over ssh
+RUN echo ’%wheel ALL=(ALL) NOPASSWD: ALL’ >> /etc/sudoers && \
+	sed -i ’s/.*requiretty$/Defaults !requiretty/’ /etc/sudoers
+
+# Add a user for the application, with sudo permissions
+RUN useradd -m jboss ; echo jboss: | chpasswd ; usermod -a -G wheel jboss
+
+# Create a Workdir and use it
+ENV JBOSS_HOME=/opt/rh
+RUN mkdir -p $JBOSS_HOME
+WORKDIR $JBOSS_HOME
+
+# Install JBoss EAP 6.4.0
+ADD jboss-eap-6.4.0.zip /tmp/
+
+# Set environment
+ENV JBOSS_HOME=$JBOSS_HOME/jboss-eap-6.4.0/
+
+
+
+
